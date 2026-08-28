@@ -10,11 +10,25 @@ export default function SettingsPage() {
   const { theme, setTheme } = useTheme();
   const { user, profile, refreshProfile } = useAuth();
   const [soundsEnabled, setSoundsEnabled] = useState(localStorage.getItem('ricot-sounds') !== 'off');
+  const [savingLocale, setSavingLocale] = useState(false);
 
   const themes: { key: Theme; label: string; icon: typeof Sun; preview: string }[] = [
     { key: 'light', label: 'Light', icon: Sun, preview: '#ffffff' },
     { key: 'dark', label: 'Dark', icon: Moon, preview: '#1e293b' },
     { key: 'midnight', label: 'Midnight', icon: Star, preview: '#000000' },
+  ];
+
+  const languages = [
+    { code: 'ru', name: 'Русский' },
+    { code: 'en', name: 'English' },
+    { code: 'uk', name: 'Українська' },
+    { code: 'pl', name: 'Polski' },
+    { code: 'de', name: 'Deutsch' },
+    { code: 'fr', name: 'Français' },
+    { code: 'es', name: 'Español' },
+    { code: 'pt', name: 'Português' },
+    { code: 'it', name: 'Italiano' },
+    { code: 'tr', name: 'Türkçe' },
   ];
 
   const handleThemeChange = (t: Theme) => {
@@ -39,6 +53,21 @@ export default function SettingsPage() {
       .eq('id', user.id);
     await refreshProfile();
     playClick();
+  };
+
+  const changeLanguage = async (code: string) => {
+    if (!user) return;
+    setSavingLocale(true);
+    try {
+      await supabase.from('profiles').update({ locale: code }).eq('id', user.id);
+      await refreshProfile();
+    } catch (err) {
+      // ignore
+    } finally {
+      setSavingLocale(false);
+      playClick();
+      hapticImpact('light');
+    }
   };
 
   return (
@@ -95,7 +124,7 @@ export default function SettingsPage() {
 
           <button
             onClick={togglePasswordVisible}
-            className="w-full flex items-center justify-between p-4 hover:surface-2 transition"
+            className="w-full flex items-center justify-between p-4 border-b surface-border hover:surface-2 transition"
           >
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-full surface-2 flex items-center justify-center text-muted">
@@ -110,6 +139,26 @@ export default function SettingsPage() {
               <div className={`w-5 h-5 rounded-full bg-white shadow-soft transition-transform mt-0.5 ${profile?.password_visible ? 'translate-x-5' : 'translate-x-0.5'}`} />
             </div>
           </button>
+
+          {/* Language selector */}
+          <div className="w-full p-4">
+            <p className="text-sm font-medium text-main">Language</p>
+            <p className="text-xs text-faint mb-2">Choose interface language</p>
+            <div className="grid grid-cols-2 gap-2">
+              {languages.map((l) => (
+                <button
+                  key={l.code}
+                  onClick={() => changeLanguage(l.code)}
+                  disabled={savingLocale}
+                  className={`py-2 px-3 rounded-lg text-sm text-left border transition ${
+                    profile?.locale === l.code ? 'border-primary bg-primary-surface' : 'surface-border'
+                  }`}
+                >
+                  {l.name}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
     </div>
