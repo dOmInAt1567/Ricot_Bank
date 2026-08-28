@@ -19,7 +19,8 @@ export type Profile = {
   phone: string | null;
   avatar_url: string | null;
   role: UserRole;
-  password_visible: boolean;
+  is_admin?: boolean;
+  password_visible?: boolean;
   created_at: string;
 };
 
@@ -35,12 +36,13 @@ export type Account = {
 export type Card = {
   id: string;
   account_id: string;
-  card_number: string;
+  card_number: number; // 1..1000
   card_holder: string;
-  expiry_month: string;
-  expiry_year: string;
-  cvv: string;
   design: string;
+  balance: number;
+  is_frozen: boolean;
+  is_blocked: boolean;
+  is_premium: boolean;
   created_at: string;
 };
 
@@ -49,19 +51,20 @@ export type Transaction = {
   from_account_id: string | null;
   to_account_id: string | null;
   amount: number;
-  type: 'transfer' | 'deposit' | 'withdrawal';
+  type: 'transfer' | 'deposit' | 'withdrawal' | 'loan_repayment';
   description: string | null;
   created_at: string;
 };
 
-export type Credit = {
+export type Loan = {
   id: string;
   user_id: string;
-  amount: number;
+  principal: number;
   remaining: number;
   interest_rate: number;
-  status: 'active' | 'paid_off';
+  status: 'active' | 'paid' | 'defaulted';
   created_at: string;
+  last_payment_at?: string | null;
 };
 
 export type AdminLog = {
