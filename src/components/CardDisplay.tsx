@@ -1,11 +1,10 @@
 import { getCardDesign } from '@/lib/cardDesigns';
 
 type Props = {
-  cardNumber: string;
+  cardNumber: number;
   cardHolder: string;
-  expiryMonth: string;
-  expiryYear: string;
-  cvv: string;
+  balance: number;
+  ifId?: string; // ИФ
   design: string;
   showDetails: boolean;
   logoSize?: 'sm' | 'md';
@@ -28,52 +27,40 @@ export function BankLogo({ size = 'md' }: { size?: 'sm' | 'md' }) {
   );
 }
 
-export default function CardDisplay({ cardNumber, cardHolder, expiryMonth, expiryYear, cvv, design, showDetails, logoSize = 'md' }: Props) {
+export default function CardDisplay({ cardNumber, cardHolder, balance, ifId, design, showDetails, logoSize = 'md' }: Props) {
   const d = getCardDesign(design);
-  const displayNumber = showDetails
-    ? cardNumber.match(/.{1,4}/g)?.join(' ') ?? cardNumber
-    : `•••• •••• •••• ${cardNumber.slice(-4)}`;
-  const displayCvv = showDetails ? cvv : '•••';
-
+  const numberDisplay = `#${String(cardNumber)}`;
   return (
     <div
       className="relative rounded-2xl p-5 shadow-soft-lg overflow-hidden"
-      style={{ background: d.gradient, color: d.text, aspectRatio: '1.586 / 1', maxWidth: '380px' }}
+      style={{
+        background: d.photoUrl ? `url(${d.photoUrl}) center/cover` : d.gradient,
+        color: d.text,
+        aspectRatio: '1.586 / 1',
+        maxWidth: '380px'
+      }}
     >
-      {/* Decorative circles */}
-      <div className="absolute -top-12 -right-12 w-32 h-32 rounded-full opacity-10" style={{ background: d.text }} />
-      <div className="absolute -bottom-8 -left-8 w-24 h-24 rounded-full opacity-5" style={{ background: d.text }} />
+      {/* IF (ИФ) in top-right */}
+      <div className="absolute top-3 right-3 text-xs font-semibold bg-white/20 px-2 py-1 rounded">
+        {ifId}
+      </div>
 
-      <div className="relative flex flex-col h-full justify-between">
-        {/* Top row: logo + chip */}
-        <div className="flex items-start justify-between">
-          <BankLogo size={logoSize} />
-          <div className="w-11 h-8 rounded-md flex items-center justify-center" style={{ background: d.chipColor, opacity: 0.9 }}>
-            <div className="w-8 h-5 border border-current rounded-sm opacity-40" />
-          </div>
-        </div>
-
-        {/* Card number */}
-        <div className="font-mono text-lg tracking-wider font-medium mt-3">
-          {displayNumber}
-        </div>
-
-        {/* Bottom row: holder + expiry */}
-        <div className="flex items-end justify-between mt-2">
-          <div>
-            <p className="text-[10px] opacity-60 uppercase tracking-wider">Card Holder</p>
-            <p className="text-sm font-semibold uppercase truncate max-w-[180px]">{cardHolder}</p>
-          </div>
-          <div className="text-right">
-            <p className="text-[10px] opacity-60 uppercase tracking-wider">Expires</p>
-            <p className="text-sm font-semibold font-mono">{showDetails ? `${expiryMonth}/${expiryYear}` : '••/••'}</p>
-          </div>
-          <div className="text-right">
-            <p className="text-[10px] opacity-60 uppercase tracking-wider">CVV</p>
-            <p className="text-sm font-semibold font-mono">{displayCvv}</p>
-          </div>
+      {/* Logo */}
+      <div className="flex items-center justify-between">
+        <BankLogo size={logoSize} />
+        <div className="w-11 h-8 rounded-md flex items-center justify-center" style={{ background: d.chipColor, opacity: 0.9 }}>
+          <div className="w-8 h-5 border border-current rounded-sm opacity-40" />
         </div>
       </div>
+
+      {/* Balance */}
+      <div className="mt-6 text-2xl font-semibold">{balance.toFixed(2)} $</div>
+
+      {/* Card number */}
+      <div className="font-mono text-lg tracking-wider font-medium mt-3">{numberDisplay}</div>
+
+      {/* Card holder */}
+      <div className="absolute bottom-4 left-5 text-sm uppercase">{cardHolder}</div>
     </div>
   );
 }
